@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tra cứu giá Hafele</title>
+    <script>
+        function fetchPrice() {
+            let skus = document.getElementById("skus").value;
+            fetch("/", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "skus=" + encodeURIComponent(skus)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("result").innerHTML = data.results.join("<br>");
+            });
+        }
+    </script>
+	<style>
+	div#result {padding-top: 15px;}
+	</style>
+</head>
+<body>
+    <h2>Nhập mã sản phẩm Hafele</h2>
+    <input type="text" id="skus" placeholder="Nhập mã, cách nhau bằng dấu phẩy">
+    <button onclick="fetchPrice()">Tìm giá</button>
+    <div id="result"></div>
+</body>
+</html>
