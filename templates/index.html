@@ -19,12 +19,49 @@
         }
     </script>
 	<style>
-	div#result {padding-top: 15px;}
+	/* Một số kiểu cơ bản để dễ nhìn hơn */
+	body {
+		font-family: Arial, sans-serif;
+		margin: 20px;
+		background-color: #f4f4f4;
+	}
+	h2 {
+		color: #333;
+	}
+	textarea {
+		width: 300px; /* Đặt chiều rộng của ô nhập */
+		height: 150px; /* Đặt chiều cao của ô nhập */
+		padding: 10px;
+		margin-bottom: 10px;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+		resize: vertical; /* Cho phép người dùng thay đổi chiều cao */
+	}
+	button {
+		padding: 10px 15px;
+		background-color: #007bff;
+		color: white;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+	}
+	button:hover {
+		background-color: #0056b3;
+	}
+	div#result {
+		padding-top: 15px;
+		background-color: #fff;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		padding: 15px;
+		margin-top: 20px;
+		white-space: pre-wrap; /* Giúp hiển thị các dòng mới */
+	}
 	</style>
 </head>
 <body>
     <h2>Nhập mã sản phẩm Hafele</h2>
-    <input type="text" id="skus" placeholder="Nhập mã, cách nhau bằng dấu phẩy">
+    <textarea id="skus" placeholder="Nhập mỗi mã trên một dòng"></textarea>
     <button onclick="fetchPrice()">Tìm giá</button>
     <div id="result"></div>
 </body>
