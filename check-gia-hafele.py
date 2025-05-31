@@ -3,12 +3,12 @@ from flask import Flask, render_template, request, jsonify
 from bs4 import BeautifulSoup
 import re
 import os
-from num2words import num2words
 
 # Hàm này chỉ chạy một lần khi khởi động ứng dụng
 def install_dependencies():
     # Sử dụng os.system để chạy lệnh pip, đảm bảo các thư viện cần thiết được cài đặt
-    os.system('pip install flask requests beautifulsoup4 num2words')
+    # Bỏ num2words vì không còn sử dụng
+    os.system('pip install flask requests beautifulsoup4')
 
 # Đảm bảo các thư viện được cài đặt trước khi khởi động ứng dụng Flask
 if __name__ == "__main__":
@@ -23,9 +23,7 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
 }
 
-# Hàm chuyển đổi số thành chữ tiếng Việt
-def convert_number_to_words(number):
-    return num2words(number, lang='vi')
+# Bỏ hàm convert_number_to_words
 
 # Hàm chính để lấy giá sản phẩm từ trang web Hafele
 def get_price(sku):
@@ -41,7 +39,8 @@ def get_price(sku):
         response.raise_for_status()
     except requests.RequestException:
         # Xử lý lỗi kết nối hoặc không tìm thấy sản phẩm
-        return f"Mã {sku}: Lỗi kết nối hoặc không tìm thấy sản phẩm"
+        # Trả về đối tượng để dễ xử lý trong JavaScript
+        return {"sku": sku, "status": "Lỗi kết nối hoặc không tìm thấy sản phẩm", "price_ex_vat": None, "price_incl_vat": None, "unit": None}
     
     # Phân tích cú pháp HTML của trang web bằng BeautifulSoup
     soup = BeautifulSoup(response.text, 'html.parser')
@@ -52,7 +51,7 @@ def get_price(sku):
     
     # Nếu không tìm thấy phần tử giá, trả về thông báo lỗi
     if not price_element:
-        return f"Mã {sku}: Không tìm thấy giá"
+        return {"sku": sku, "status": "Không tìm thấy giá", "price_ex_vat": None, "price_incl_vat": None, "unit": None}
     
     # Lấy văn bản từ phần tử giá và loại bỏ khoảng trắng
     price_text = price_element.get_text(strip=True)
@@ -71,13 +70,14 @@ def get_price(sku):
     # Lấy văn bản đơn vị, nếu không có thì mặc định là "Không xác định"
     unit_text = unit_element.get_text(strip=True) if unit_element else "Không xác định"
     
-    # Chuyển đổi giá chưa VAT và đã VAT sang dạng chữ
-    price_ex_vat_words = convert_number_to_words(price_ex_vat)
-    price_incl_vat_words = convert_number_to_words(price_incl_vat)
-    
-    # Trả về chuỗi kết quả đã định dạng
-    return (f"Mã {sku} - Giá chưa VAT: {price_ex_vat} VND ({price_ex_vat_words} đồng) - "
-            f"Giá đã VAT 10%: {price_incl_vat} VND ({price_incl_vat_words} đồng) - Đơn vị: {unit_text}")
+    # Trả về một dictionary chứa các thông tin
+    return {
+        "sku": sku,
+        "status": "OK",
+        "price_ex_vat": price_ex_vat,
+        "price_incl_vat": price_incl_vat,
+        "unit": unit_text
+    }
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -88,6 +88,7 @@ def index():
         skus = [sku.strip() for sku in raw_skus.split('\n') if sku.strip()]
         
         # Lấy giá cho từng SKU và lưu vào danh sách results
+        # Mỗi phần tử trong results là một dictionary
         results = [get_price(sku) for sku in skus]
         
         # Trả về kết quả dưới dạng JSON
