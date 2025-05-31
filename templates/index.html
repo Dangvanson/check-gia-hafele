@@ -14,28 +14,80 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById("result").innerHTML = data.results.join("<br>");
+                // Gọi hàm để hiển thị kết quả dưới dạng bảng
+                displayResultsAsTable(data.results);
+            })
+            .catch(error => {
+                console.error("Lỗi khi fetch dữ liệu:", error);
+                document.getElementById("result").innerHTML = "<p style='color: red;'>Có lỗi xảy ra khi lấy dữ liệu.</p>";
             });
+        }
+
+        function displayResultsAsTable(results) {
+            const resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = ""; // Xóa nội dung cũ
+
+            if (results.length === 0) {
+                resultDiv.innerHTML = "<p>Không có mã sản phẩm nào được nhập.</p>";
+                return;
+            }
+
+            // Tạo bảng
+            const table = document.createElement("table");
+            table.classList.add("price-table"); // Thêm class để định dạng CSS
+
+            // Tạo hàng tiêu đề
+            const thead = document.createElement("thead");
+            const headerRow = document.createElement("tr");
+            ["Mã sản phẩm", "Giá chưa VAT", "Giá đã VAT (10%)", "Đơn vị", "Trạng thái"].forEach(text => {
+                const th = document.createElement("th");
+                th.textContent = text;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // Tạo phần thân bảng
+            const tbody = document.createElement("tbody");
+            results.forEach(item => {
+                const row = document.createElement("tr");
+                let priceExVat = item.price_ex_vat !== null ? item.price_ex_vat.toLocaleString('vi-VN') : "N/A";
+                let priceInclVat = item.price_incl_vat !== null ? item.price_incl_vat.toLocaleString('vi-VN') : "N/A";
+                let unit = item.unit !== null ? item.unit : "N/A";
+                let status = item.status === "OK" ? "" : item.status; // Hiển thị trạng thái nếu có lỗi
+
+                // Thêm dữ liệu vào các ô
+                const cells = [item.sku, priceExVat, priceInclVat, unit, status];
+                cells.forEach(cellText => {
+                    const td = document.createElement("td");
+                    td.textContent = cellText;
+                    row.appendChild(td);
+                });
+                tbody.appendChild(row);
+            });
+            table.appendChild(tbody);
+            
+            resultDiv.appendChild(table);
         }
     </script>
 	<style>
-	/* Một số kiểu cơ bản để dễ nhìn hơn */
 	body {
 		font-family: Arial, sans-serif;
 		margin: 20px;
 		background-color: #f4f4f4;
+		color: #333;
 	}
 	h2 {
 		color: #333;
 	}
 	textarea {
-		width: 300px; /* Đặt chiều rộng của ô nhập */
-		height: 150px; /* Đặt chiều cao của ô nhập */
+		width: 300px;
+		height: 150px;
 		padding: 10px;
 		margin-bottom: 10px;
 		border: 1px solid #ccc;
 		border-radius: 4px;
-		resize: vertical; /* Cho phép người dùng thay đổi chiều cao */
+		resize: vertical;
 	}
 	button {
 		padding: 10px 15px;
@@ -50,17 +102,43 @@
 	}
 	div#result {
 		padding-top: 15px;
-		background-color: #fff;
-		border: 1px solid #ddd;
-		border-radius: 4px;
-		padding: 15px;
 		margin-top: 20px;
-		white-space: pre-wrap; /* Giúp hiển thị các dòng mới */
 	}
+
+    /* CSS cho bảng kết quả */
+    .price-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        overflow: hidden; /* Đảm bảo góc bo tròn hoạt động */
+    }
+
+    .price-table th, .price-table td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: left;
+    }
+
+    .price-table th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+        color: #555;
+    }
+
+    .price-table tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    .price-table tr:hover {
+        background-color: #e9e9e9;
+    }
 	</style>
 </head>
 <body>
-    <h2>Nhập mã sản phẩm Hafele</h2>
+    <h2>Tra cứu giá sản phẩm Hafele</h2>
     <textarea id="skus" placeholder="Nhập mỗi mã trên một dòng"></textarea>
     <button onclick="fetchPrice()">Tìm giá</button>
     <div id="result"></div>
