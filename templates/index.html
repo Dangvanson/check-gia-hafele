@@ -14,7 +14,6 @@
             })
             .then(response => response.json())
             .then(data => {
-                // Gọi hàm để hiển thị kết quả dưới dạng bảng
                 displayResultsAsTable(data.results);
             })
             .catch(error => {
@@ -25,18 +24,16 @@
 
         function displayResultsAsTable(results) {
             const resultDiv = document.getElementById("result");
-            resultDiv.innerHTML = ""; // Xóa nội dung cũ
+            resultDiv.innerHTML = "";
 
             if (results.length === 0) {
                 resultDiv.innerHTML = "<p>Không có mã sản phẩm nào được nhập.</p>";
                 return;
             }
 
-            // Tạo bảng
             const table = document.createElement("table");
-            table.classList.add("price-table"); // Thêm class để định dạng CSS
+            table.classList.add("price-table");
 
-            // Tạo hàng tiêu đề
             const thead = document.createElement("thead");
             const headerRow = document.createElement("tr");
             ["Mã sản phẩm", "Giá chưa VAT", "Giá đã VAT (10%)", "Đơn vị", "Trạng thái"].forEach(text => {
@@ -47,16 +44,25 @@
             thead.appendChild(headerRow);
             table.appendChild(thead);
 
-            // Tạo phần thân bảng
             const tbody = document.createElement("tbody");
             results.forEach(item => {
                 const row = document.createElement("tr");
-                let priceExVat = item.price_ex_vat !== null ? item.price_ex_vat.toLocaleString('vi-VN') : "N/A";
-                let priceInclVat = item.price_incl_vat !== null ? item.price_incl_vat.toLocaleString('vi-VN') : "N/A";
-                let unit = item.unit !== null ? item.unit : "N/A";
-                let status = item.status === "OK" ? "" : item.status; // Hiển thị trạng thái nếu có lỗi
+                
+                // Hàm định dạng số theo yêu cầu: dấu phẩy cho hàng nghìn, không có phần thập phân
+                function formatNumberWithComma(number) {
+                    if (number === null) {
+                        return "N/A";
+                    }
+                    // Chuyển đổi số sang chuỗi, thêm dấu phẩy cho hàng nghìn
+                    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                }
 
-                // Thêm dữ liệu vào các ô
+                let priceExVat = formatNumberWithComma(item.price_ex_vat);
+                let priceInclVat = formatNumberWithComma(item.price_incl_vat);
+                
+                let unit = item.unit !== null ? item.unit : "N/A";
+                let status = item.status === "OK" ? "" : item.status;
+
                 const cells = [item.sku, priceExVat, priceInclVat, unit, status];
                 cells.forEach(cellText => {
                     const td = document.createElement("td");
@@ -105,7 +111,6 @@
 		margin-top: 20px;
 	}
 
-    /* CSS cho bảng kết quả */
     .price-table {
         width: 100%;
         border-collapse: collapse;
@@ -113,7 +118,7 @@
         background-color: #fff;
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
         border-radius: 8px;
-        overflow: hidden; /* Đảm bảo góc bo tròn hoạt động */
+        overflow: hidden;
     }
 
     .price-table th, .price-table td {
