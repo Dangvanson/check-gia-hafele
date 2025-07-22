@@ -7,7 +7,6 @@ import os
 # Hàm này chỉ chạy một lần khi khởi động ứng dụng
 def install_dependencies():
     # Sử dụng os.system để chạy lệnh pip, đảm bảo các thư viện cần thiết được cài đặt
-    # Bỏ num2words vì không còn sử dụng
     os.system('pip install flask requests beautifulsoup4')
 
 # Đảm bảo các thư viện được cài đặt trước khi khởi động ứng dụng Flask
@@ -22,8 +21,6 @@ HAFELE_URL = "https://www.hafele.com.vn/hap-live/web/WFS/Haefele-HVN-Site/vi_VN/
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
 }
-
-# Bỏ hàm convert_number_to_words
 
 # Hàm chính để lấy giá sản phẩm từ trang web Hafele
 def get_price(sku):
@@ -40,7 +37,7 @@ def get_price(sku):
     except requests.RequestException:
         # Xử lý lỗi kết nối hoặc không tìm thấy sản phẩm
         # Trả về đối tượng để dễ xử lý trong JavaScript
-        return {"sku": sku, "status": "Lỗi kết nối hoặc không tìm thấy sản phẩm", "price_ex_vat": None, "price_incl_vat": None, "unit": None}
+        return {"sku": sku, "status": "Lỗi kết nối hoặc không tìm thấy sản phẩm", "price_ex_vat": None, "price_incl_vat": None, "price_incl_vat_8": None, "unit": None}
     
     # Phân tích cú pháp HTML của trang web bằng BeautifulSoup
     soup = BeautifulSoup(response.text, 'html.parser')
@@ -51,7 +48,7 @@ def get_price(sku):
     
     # Nếu không tìm thấy phần tử giá, trả về thông báo lỗi
     if not price_element:
-        return {"sku": sku, "status": "Không tìm thấy giá", "price_ex_vat": None, "price_incl_vat": None, "unit": None}
+        return {"sku": sku, "status": "Không tìm thấy giá", "price_ex_vat": None, "price_incl_vat": None, "price_incl_vat_8": None, "unit": None}
     
     # Lấy văn bản từ phần tử giá và loại bỏ khoảng trắng
     price_text = price_element.get_text(strip=True)
@@ -66,6 +63,8 @@ def get_price(sku):
     price_ex_vat = int(price_numeric)
     # Tính giá đã bao gồm VAT 10%
     price_incl_vat = int(price_ex_vat * 1.1)
+    # TÍNH GIÁ ĐÃ BAO GỒM VAT 8% (THAY ĐỔI MỚI)
+    price_incl_vat_8 = int(price_ex_vat * 1.08)
     
     # Lấy văn bản đơn vị, nếu không có thì mặc định là "Không xác định"
     unit_text = unit_element.get_text(strip=True) if unit_element else "Không xác định"
@@ -76,6 +75,7 @@ def get_price(sku):
         "status": "OK",
         "price_ex_vat": price_ex_vat,
         "price_incl_vat": price_incl_vat,
+        "price_incl_vat_8": price_incl_vat_8, # Trả về giá 8% VAT
         "unit": unit_text
     }
 
