@@ -36,7 +36,8 @@
 
             const thead = document.createElement("thead");
             const headerRow = document.createElement("tr");
-            ["Mã sản phẩm", "Giá chưa VAT", "Giá đã VAT (10%)", "Đơn vị", "Trạng thái"].forEach(text => {
+            // THAY ĐỔI 1: Thêm tiêu đề cột "Giá đã VAT (8%)"
+            ["Mã sản phẩm", "Giá chưa VAT", "Giá đã VAT (8%)", "Giá đã VAT (10%)", "Đơn vị", "Trạng thái"].forEach(text => {
                 const th = document.createElement("th");
                 th.textContent = text;
                 headerRow.appendChild(th);
@@ -48,22 +49,23 @@
             results.forEach(item => {
                 const row = document.createElement("tr");
                 
-                // Hàm định dạng số theo yêu cầu: dấu phẩy cho hàng nghìn, không có phần thập phân
                 function formatNumberWithComma(number) {
                     if (number === null) {
                         return "N/A";
                     }
-                    // Chuyển đổi số sang chuỗi, thêm dấu phẩy cho hàng nghìn
                     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                 }
 
                 let priceExVat = formatNumberWithComma(item.price_ex_vat);
+                // THAY ĐỔI 2: Lấy và định dạng giá 8% VAT
+                let priceInclVat8 = formatNumberWithComma(item.price_incl_vat_8);
                 let priceInclVat = formatNumberWithComma(item.price_incl_vat);
                 
                 let unit = item.unit !== null ? item.unit : "N/A";
                 let status = item.status === "OK" ? "" : item.status;
 
-                const cells = [item.sku, priceExVat, priceInclVat, unit, status];
+                // THAY ĐỔI 3: Thêm giá 8% vào mảng dữ liệu của hàng
+                const cells = [item.sku, priceExVat, priceInclVat8, priceInclVat, unit, status];
                 cells.forEach(cellText => {
                     const td = document.createElement("td");
                     td.textContent = cellText;
